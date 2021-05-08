@@ -32,7 +32,12 @@ namespace GeoipApiDotnet.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Locate([FromQuery] string ip)
+        public Task<IActionResult> Locate([FromQuery] string ip)
+        {
+            return Task.Run(() => this.TryGetResult(ip));
+        }
+
+        private async Task<IActionResult> TryGetResult(string ip)
         {
             try
             {
