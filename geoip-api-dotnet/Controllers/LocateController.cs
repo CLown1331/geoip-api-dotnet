@@ -46,6 +46,7 @@ namespace GeoipApiDotnet.Controllers
                             cityName = city.City.Names["en"],
                             latitude = city.Location.Latitude,
                             longitude = city.Location.Longitude,
+                            v = "d",
                         });
                     }
                     else
