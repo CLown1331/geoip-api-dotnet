@@ -3,6 +3,7 @@
 // LAST: 08-05-2021
 
 
+using System;
 using System.Net;
 using MaxMind.GeoIP2.Exceptions;
 using MaxMind.GeoIP2.Responses;
@@ -21,12 +22,14 @@ namespace GeoipApiDotnet.Controllers
     {
         private readonly ILogger<LocateController> _logger;
         private readonly string _geodbCityPath;
+        private readonly string _id;
 
         public LocateController(ILogger<LocateController> logger, IConfiguration configuration)
         {
             _logger = logger;
             _geodbCityPath =  configuration.GetValue<string>("GEODB_CITY");
             _logger.LogInformation($"Db_path: {_geodbCityPath}");
+            _id = "d_" + Guid.NewGuid();
         }
 
         [HttpGet]
@@ -51,7 +54,7 @@ namespace GeoipApiDotnet.Controllers
                             cityName = city.City.Names["en"],
                             latitude = city.Location.Latitude,
                             longitude = city.Location.Longitude,
-                            v = "d",
+                            v = _id,
                         });
                     }
                     else
