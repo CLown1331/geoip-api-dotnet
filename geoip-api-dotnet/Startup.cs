@@ -2,6 +2,9 @@
 // CREATED: 08-05-2021
 // LAST: 08-05-2021
 
+using geoip_api_dotnet.Service;
+using geoip_api_dotnet.Service.Abstraction;
+
 namespace geoip_api_dotnet
 {
     using System;
@@ -23,6 +26,7 @@ namespace geoip_api_dotnet
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+            services.AddSingleton<ICityLocatorService, CityLocatorService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

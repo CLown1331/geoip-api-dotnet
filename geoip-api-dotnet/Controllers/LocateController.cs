@@ -3,70 +3,49 @@
 // LAST: 08-05-2021
 
 
-using System;
-using System.Net;
-using MaxMind.GeoIP2.Exceptions;
-using MaxMind.GeoIP2.Responses;
+
 
 namespace GeoipApiDotnet.Controllers
 {
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
     using System.Threading.Tasks;
-    using MaxMind.GeoIP2;
     using Microsoft.Extensions.Configuration;
+    using geoip_api_dotnet.Service.Abstraction;
+    using MaxMind.GeoIP2.Responses;
 
     [ApiController]
     [Route("[controller]")]
     public class LocateController : ControllerBase
     {
         private readonly ILogger<LocateController> _logger;
-        private readonly string _geodbCityPath;
-        private readonly string _id;
+        private readonly ICityLocatorService _cityLocatorService;
 
-        public LocateController(ILogger<LocateController> logger, IConfiguration configuration)
+        public LocateController(ILogger<LocateController> logger, IConfiguration configuration, ICityLocatorService cityLocatorService)
         {
             _logger = logger;
-            _geodbCityPath =  configuration.GetValue<string>("GEODB_CITY");
-            _logger.LogInformation($"Db_path: {_geodbCityPath}");
-            _id = "d_" + Guid.NewGuid();
+            _cityLocatorService = cityLocatorService;
         }
 
         [HttpGet]
-        public Task<IActionResult> Locate([FromQuery] string ip)
+        public async Task<IActionResult> Locate([FromQuery] string ip)
         {
-            return Task.Run(() => this.TryGetResult(ip));
-        }
-
-        private async Task<IActionResult> TryGetResult(string ip)
-        {
-            using (DatabaseReader reader = new DatabaseReader(_geodbCityPath))
+            CityResponse city = _cityLocatorService.Get(ip);
+            if (city == null)
             {
-                try
+                return BadRequest("bad ip");
+            }
+            else
+            {
+                return Ok(new
                 {
-                    _logger.LogInformation($"Trying {ip}");
-                    if (reader.TryCity(ip, out CityResponse city))
-                    {
-                        return Ok(new
-                        {
-                            ipAddress = ip,
-                            countryName = city.Country.Names["en"],
-                            cityName = city.City.Names["en"],
-                            latitude = city.Location.Latitude,
-                            longitude = city.Location.Longitude,
-                            v = _id,
-                        });
-                    }
-                    else
-                    {
-                        return BadRequest("bad ip");
-                    }
-                }
-                catch (GeoIP2Exception ex)
-                {
-                    _logger.LogError("Exception occured", ex);
-                    return BadRequest("bad ip");
-                }
+                    ipAddress = ip,
+                    countryName = city.Country.Names["en"],
+                    cityName = city.City.Names["en"],
+                    latitude = city.Location.Latitude,
+                    longitude = city.Location.Longitude,
+                    v = _cityLocatorService.Id,
+                });
             }
         }
     }
