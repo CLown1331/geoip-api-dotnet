@@ -4,6 +4,7 @@
 
 namespace geoip_api_dotnet
 {
+    using System;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.Configuration;
@@ -31,6 +32,8 @@ namespace geoip_api_dotnet
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            Console.WriteLine(env.EnvironmentName);
 
             app.UseRouting();
 
