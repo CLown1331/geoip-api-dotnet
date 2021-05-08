@@ -26,7 +26,7 @@ namespace GeoipApiDotnet.Controllers
         {
             _logger = logger;
             _geodbCityPath =  configuration.GetValue<string>("GEODB_CITY");
-            _logger.LogInformation(_geodbCityPath);
+            _logger.LogInformation($"Db_path: {_geodbCityPath}");
         }
 
         [HttpGet]
