@@ -26,6 +26,7 @@ namespace GeoipApiDotnet.Controllers
         {
             _logger = logger;
             _geodbCityPath =  configuration.GetValue<string>("GEODB_CITY");
+            _logger.LogInformation(_geodbCityPath);
         }
 
         [HttpGet]
@@ -35,6 +36,7 @@ namespace GeoipApiDotnet.Controllers
             {
                 try
                 {
+                    _logger.LogInformation($"Trying {ip}");
                     if (reader.TryCity(ip, out CityResponse city))
                     {
                         return Ok(new
@@ -53,6 +55,7 @@ namespace GeoipApiDotnet.Controllers
                 }
                 catch (GeoIP2Exception ex)
                 {
+                    _logger.LogError("Exception occured", ex);
                     return BadRequest("bad ip");
                 }
             }
