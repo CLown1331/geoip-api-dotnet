@@ -21,44 +21,43 @@ namespace GeoipApiDotnet.Controllers
     {
         private readonly ILogger<LocateController> _logger;
         private readonly string _geodbCityPath;
+        private readonly DatabaseReader _reader;
 
         public LocateController(ILogger<LocateController> logger, IConfiguration configuration)
         {
             _logger = logger;
             _geodbCityPath =  configuration.GetValue<string>("GEODB_CITY");
             _logger.LogInformation($"Db_path: {_geodbCityPath}");
+            _reader = new DatabaseReader(_geodbCityPath);
         }
 
         [HttpGet]
         public async Task<IActionResult> Locate([FromQuery] string ip)
         {
-            using (DatabaseReader reader = new DatabaseReader(_geodbCityPath))
+            try
             {
-                try
+                _logger.LogInformation($"Trying {ip}");
+                if (_reader.TryCity(ip, out CityResponse city))
                 {
-                    _logger.LogInformation($"Trying {ip}");
-                    if (reader.TryCity(ip, out CityResponse city))
+                    return Ok(new
                     {
-                        return Ok(new
-                        {
-                            ipAddress = ip,
-                            countryName = city.Country.Names["en"],
-                            cityName = city.City.Names["en"],
-                            latitude = city.Location.Latitude,
-                            longitude = city.Location.Longitude,
-                            v = "d",
-                        });
-                    }
-                    else
-                    {
-                        return BadRequest("bad ip");
-                    }
+                        ipAddress = ip,
+                        countryName = city.Country.Names["en"],
+                        cityName = city.City.Names["en"],
+                        latitude = city.Location.Latitude,
+                        longitude = city.Location.Longitude,
+                        v = "d",
+                    });
                 }
-                catch (GeoIP2Exception ex)
+                else
                 {
-                    _logger.LogError("Exception occured", ex);
                     return BadRequest("bad ip");
                 }
+            }
+            catch (GeoIP2Exception ex)
+            {
+                _logger.LogError("Exception occured", ex);
+                return BadRequest("bad ip");
             }
         }
     }
